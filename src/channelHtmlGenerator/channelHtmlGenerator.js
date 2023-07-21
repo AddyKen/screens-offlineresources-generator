@@ -23,16 +23,22 @@ export default class ChannelHtmlGenerator {
     let scriptString = scriptText.toString();
     scriptString = scriptString.substring(scriptString.indexOf('{') + 1);
     scriptString = scriptString.slice(0, -1);
-    const assetsJson = JSON.stringify(assets);
-    scriptString = `const assets = JSON.parse('${assetsJson}');${scriptString}`;
+    // const assetsJson = JSON.stringify(assets);
+    const logicToAdd = `var metaTag = document.getElementById("data");
+                        var data = metaTag.getAttribute("data-info");`;
+
+    scriptString = `${logicToAdd}const assets = JSON.parse(data);${scriptString}`;
+    
     return scriptString;
   };
 
   static createCarousel = (assets = []) => {
     const scriptString = ChannelHtmlGenerator.createScript(assets);
     const cssString = ChannelHtmlGenerator.createCSS();
+    const assetsJson = JSON.stringify(assets);
     return `<html lang="en-US">
              <head>
+               <meta id = "data" data-info='${assetsJson}' />
                <title></title>
                <script type="module">${scriptString}</script>
                <style>${cssString}</style>
@@ -169,7 +175,8 @@ export default class ChannelHtmlGenerator {
                 launchStartDate: assetDetails['Launch Start'],
                 launchEndDate: assetDetails['Launch End'],
                 type: contentType,
-                isGMT: DateUtils.isGMT(assetDetails.Timezone)
+                isGMT: DateUtils.isGMT(assetDetails.Timezone),
+                tags: assetDetails['Tags'].split(',')
               });
             } catch (err) {
               console.warn(`Error while processing asset ${JSON.stringify(sheetData[row])}`, err);
